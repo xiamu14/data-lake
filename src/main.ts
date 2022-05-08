@@ -11,54 +11,58 @@ interface Options {
   schema: Record<string, Schema>;
 }
 
-class Localdb {
-  private cacheData: Record<string, any[]>;
+interface ItemBaseType {
+  id: string;
+  createAt: number;
+  updateAt: number;
+}
+
+type FilterType<T> = (data: T) => boolean;
+
+interface WhereById {
+  id: string;
+}
+
+class Localdb<T> {
+  private cacheData: (T & ItemBaseType)[];
   private filepath: string;
   private fileWriter: Writer;
-  public tables: Record<string, Curd> = {};
+  public tables: Curd<T>;
   constructor(filepath: string, { schema }: Options) {
     this.filepath = filepath;
     if (fse.existsSync(filepath)) {
       if (fse.readFileSync(filepath, "utf8")) {
         this.cacheData = fse.readJsonSync(filepath);
       } else {
-        this.cacheData = { user: [] };
+        this.cacheData = [];
       }
     } else {
-      this.cacheData = { user: [] };
+      this.cacheData = [];
       fse.mkdirSync(path.dirname(filepath));
       fse.writeFileSync(filepath, "{}");
     }
     this.fileWriter = new Writer(this.filepath);
-    Object.keys(schema).forEach((key) => {
-      if (this.cacheData.hasOwnProperty(key)) {
-        this.tables[key] = new Curd(this.cacheData[key], schema[key]);
-      } else {
-        this.tables[key] = new Curd([], schema[key]);
-      }
-    });
+    this.tables = new Curd(this.cacheData, schema);
   }
   async write() {
-    Object.keys(this.tables).forEach((key) => {
-      this.cacheData[key] = this.tables[key].get();
-    });
+    this.cacheData = this.tables.getAll();
 
     try {
-      await this.fileWriter.write(JSON.stringify(this.cacheData));
+      await this.fileWriter.write(JSON.stringify(this.cacheData, null, "\t"));
     } catch (error) {
-      throw error;
+      console.log(error);
     }
   }
 }
 
-class Curd {
-  private data: any[];
+class Curd<T extends Record<string, any>> {
+  private data: (T & ItemBaseType)[];
   private schema: Schema;
-  constructor(data: any, schema: Schema) {
+  constructor(data: (T & ItemBaseType)[], schema: Schema) {
     this.data = data;
     this.schema = schema;
   }
-  create(item: Record<string, any>) {
+  create(item: T) {
     const jtdRes = validate(this.schema, item);
     if (!isEmptyArray(jtdRes)) {
       throw new Error(
@@ -74,58 +78,70 @@ class Curd {
     this.data.push(fullItem);
   }
 
-  get() {
+  getAll() {
     return this.data;
   }
 
-  createMany(items: Record<string, any>[]) {
-    this.data = this.data.concat(items);
-  }
-
-  findUnique(condition: { where: any }) {
-    const { where } = condition;
-    const keys = Object.keys(where);
-    const result = this.data.filter((item) => {
-      return keys.every((key) => where[key] === item[key]);
+  createMany(items: T[]) {
+    items.forEach((item) => {
+      this.create(item);
     });
-    if (result.length > 0) {
-      return result[0];
-    } else {
-      return null;
-    }
   }
 
-  findMany(condition: { where: any }) {
+  findOne(condition: { where: FilterType<T> }) {
     const { where } = condition;
-    const keys = Object.keys(where);
+    const result = this.data.find((item) => {
+      return where(item);
+    });
+    return result;
+  }
+
+  findOneById(where: WhereById) {
+    const { id } = where;
+    return this.data.find((it) => it.id === id);
+  }
+
+  findMany(condition: { where: FilterType<T> }) {
+    const { where } = condition;
+
     return this.data.filter((item) => {
-      return keys.every((key) => where[key] === item[key]);
+      return where(item);
     });
   }
 
-  update(condition: { where: any; data: Record<string, any> }) {
+  update(condition: { where: FilterType<T>; data: Partial<T> }) {
     const { where, data } = condition;
     const target = this.findMany({ where });
     target.forEach((item) => {
       const index = this.data.indexOf(item);
-      const source = this.data[index];
-      // TODO: 增量更新
-      for (const key in data) {
-        if (source.hasOwnProperty(key)) {
-          source[key] = data[key];
-          source.updateAt = Date.now();
-        }
-      }
+      let source = this.data[index];
+      source = {
+        ...source,
+        ...data,
+        updateAt: Date.now(),
+      };
+
       this.data[index] = source;
     });
   }
 
-  delete(condition: { where: any }) {
-    const index = this.data.indexOf(this.findUnique(condition));
-    this.data.splice(index, 1);
+  delete(condition: { where: FilterType<T> }) {
+    const target = this.findOne(condition);
+    if (target) {
+      const index = this.data.indexOf(target);
+      this.data.splice(index, 1);
+    }
   }
 
-  deleteMany(condition: { where: any }) {
+  deleteById(condition: WhereById) {
+    const target = this.findOneById(condition);
+    if (target) {
+      const index = this.data.indexOf(target);
+      this.data.splice(index, 1);
+    }
+  }
+
+  deleteMany(condition: { where: FilterType<T> }) {
     const target = this.findMany(condition);
     const indexArray: number[] = [];
     target.forEach((it) => indexArray.push(this.data.indexOf(it)));

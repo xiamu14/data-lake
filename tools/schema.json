@@ -1,0 +1,6 @@
+{
+  "properties": {
+    "name": { "type": "string" },
+    "age": { "type": "int32" }
+  }
+}

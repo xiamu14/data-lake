@@ -1,14 +1,26 @@
 import path from "path";
 import Localdb, { createSchema } from "../src/main";
 import userModel from "./schema/user.model";
+import * as url from "url";
 
-const localdb = new Localdb(path.join(__dirname, "./local.test.json"), {
-  schema: createSchema([userModel]),
+const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
+
+const localdb = new Localdb<{ age: number; name: string }>(
+  path.join(__dirname, "./local.test.json"),
+  {
+    schema: createSchema([userModel]),
+  }
+);
+
+const user = localdb.tables;
+
+// user.create({ name: "Jane", age: 23.2 });
+
+// console.log(user.getAll());
+
+user.update({
+  where: (data) => data.name === "Jane",
+  data: { age: 36 },
 });
 
-const { user } = localdb.tables;
-
-user.create({ name: "Jane", age: 23.2 });
-
-user.update({ where: { id: "wxygUB5NWFkkfyLzsur01" }, data: { age: 20 } });
 localdb.write();

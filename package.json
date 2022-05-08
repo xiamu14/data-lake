@@ -1,17 +1,32 @@
 {
-  "name": "localdb",
-  "version": "1.0.0",
+  "name": "@redchili/localdb",
+  "version": "0.0.1-alpha.0",
   "main": "index.js",
   "license": "MIT",
+  "private": false,
+  "files": [
+    "build"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "node --loader tsm example/index.ts",
+    "codegen": "./tools/jtd-codegen ./tools/schema.json --typescript-out ./example/schema"
+  },
   "dependencies": {
     "@redchili/steno": "^2.0.1",
+    "@typescript-eslint/eslint-plugin": "^5.22.0",
+    "@typescript-eslint/parser": "^5.22.0",
+    "eslint": "^8.15.0",
     "fs-extra": "^10.0.0",
     "jtd": "^0.1.1",
     "nanoid": "^3.1.25",
     "ts-node": "^10.2.1",
+    "tsm": "^2.2.1",
     "typescript": "^4.4.2"
   },
   "devDependencies": {
-    "@types/fs-extra": "^9.0.12"
+    "@types/fs-extra": "^9.0.12",
+    "@types/node": "^17.0.31",
+    "renew-it": "^1.5.2"
   }
 }
