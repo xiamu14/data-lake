@@ -19,10 +19,6 @@ interface ItemBaseType {
 
 type FilterType<T> = (data: T) => boolean;
 
-interface WhereById {
-  id: string;
-}
-
 class Localdb<T> {
   private cacheData: (T & ItemBaseType)[];
   private filepath: string;
@@ -88,8 +84,7 @@ class Curd<T extends Record<string, any>> {
     });
   }
 
-  findById(where: WhereById) {
-    const { id } = where;
+  findById(id: string) {
     return this.data.find((it) => it.id === id);
   }
 
@@ -101,8 +96,8 @@ class Curd<T extends Record<string, any>> {
     });
   }
 
-  updateById(condition: WhereById, data: Partial<T>) {
-    const target = this.findById(condition);
+  updateById(id: string, data: Partial<T>) {
+    const target = this.findById(id);
     if (target) {
       const index = this.data.indexOf(target);
       const source = this.data[index];
@@ -130,8 +125,8 @@ class Curd<T extends Record<string, any>> {
     });
   }
 
-  deleteById(condition: WhereById) {
-    const target = this.findById(condition);
+  deleteById(id: string) {
+    const target = this.findById(id);
     if (target) {
       const index = this.data.indexOf(target);
       this.data.splice(index, 1);
