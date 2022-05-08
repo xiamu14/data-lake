@@ -1,7 +1,7 @@
 {
   "name": "@redchili/localdb",
   "version": "0.0.1-alpha.4",
-  "main": "index.js",
+  "main": "build/main.js",
   "license": "MIT",
   "private": false,
   "files": [
