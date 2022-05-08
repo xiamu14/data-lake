@@ -3,6 +3,7 @@
   "version": "0.0.1-alpha.7",
   "main": "build/main.js",
   "license": "MIT",
+  "type": "module",
   "private": false,
   "files": [
     "build"

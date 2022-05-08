@@ -3,9 +3,9 @@ import fse from "fs-extra";
 import { Schema, validate } from "jtd";
 import { nanoid } from "nanoid";
 import path from "path";
-import { isEmptyArray } from "./is-empty";
+import { isEmptyArray } from "./is-empty.js";
 
-export { default as createSchema } from "./create-schema";
+export { default as createSchema } from "./create-schema.js";
 
 interface Options {
   schema: Record<string, Schema>;
