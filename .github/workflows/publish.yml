@@ -1,4 +1,4 @@
-name: ${{github.ref_name}}
+name: NPM CI
 
 on:
   create:
