@@ -1,7 +1,7 @@
 {
   "name": "@redchili/localdb",
   "version": "0.0.1-alpha.8",
-  "main": "build/main.js",
+  "main": "build/mod.js",
   "license": "MIT",
   "type": "module",
   "private": false,
@@ -18,6 +18,9 @@
     "fs-extra": "^10.0.0",
     "jtd": "^0.1.1",
     "nanoid": "^3.1.25"
+  },
+  "peerDependencies": {
+    "typescript": "^4.4.2"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.12",

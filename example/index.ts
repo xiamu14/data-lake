@@ -1,5 +1,5 @@
 import path from "path";
-import Localdb, { createSchema } from "../src/main";
+import Localdb, { createSchema } from "../src/mod";
 import userModel from "./schema/user.model";
 import * as url from "url";
 
@@ -18,7 +18,7 @@ const user = localdb.tables;
 
 // console.log(user.getAll());
 
-user.update({
+user.updateMany({
   where: (data) => data.name === "Jane",
   data: { age: 36 },
 });

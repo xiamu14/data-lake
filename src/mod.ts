@@ -88,15 +88,7 @@ class Curd<T extends Record<string, any>> {
     });
   }
 
-  findOne(condition: { where: FilterType<T> }) {
-    const { where } = condition;
-    const result = this.data.find((item) => {
-      return where(item);
-    });
-    return result;
-  }
-
-  findOneById(where: WhereById) {
+  findById(where: WhereById) {
     const { id } = where;
     return this.data.find((it) => it.id === id);
   }
@@ -109,7 +101,20 @@ class Curd<T extends Record<string, any>> {
     });
   }
 
-  update(condition: { where: FilterType<T>; data: Partial<T> }) {
+  updateById(condition: WhereById, data: Partial<T>) {
+    const target = this.findById(condition);
+    if (target) {
+      const index = this.data.indexOf(target);
+      const source = this.data[index];
+      this.data[index] = {
+        ...source,
+        ...data,
+        updateAt: Date.now(),
+      };
+    }
+  }
+
+  updateMany(condition: { where: FilterType<T>; data: Partial<T> }) {
     const { where, data } = condition;
     const target = this.findMany({ where });
     target.forEach((item) => {
@@ -125,16 +130,8 @@ class Curd<T extends Record<string, any>> {
     });
   }
 
-  delete(condition: { where: FilterType<T> }) {
-    const target = this.findOne(condition);
-    if (target) {
-      const index = this.data.indexOf(target);
-      this.data.splice(index, 1);
-    }
-  }
-
   deleteById(condition: WhereById) {
-    const target = this.findOneById(condition);
+    const target = this.findById(condition);
     if (target) {
       const index = this.data.indexOf(target);
       this.data.splice(index, 1);
