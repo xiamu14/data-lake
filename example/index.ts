@@ -1,26 +1,34 @@
 import path from "path";
-import Localdb, { createSchema } from "../src/mod";
-import userModel from "./schema/user.model";
+import Localdb from "../src/mod.js";
+import z from "zod";
+import NodeAdapter from "../src/adapter/node.js";
 import * as url from "url";
-
-const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
-
-const localdb = new Localdb<{ age: number; name: string }>(
-  path.join(__dirname, "./local.test.json"),
-  {
-    schema: createSchema([userModel]),
-  }
+export const __dirname = url.fileURLToPath(new URL(".", import.meta.url));
+interface Data extends Record<string, unknown> {
+  age: number;
+  name: string;
+}
+const localdb = new Localdb<Data>(
+  new NodeAdapter(path.join(__dirname, "./local.test.json"))
 );
 
-const user = localdb.tables;
+async function test() {
+  await localdb.schema({
+    schema: z.object({
+      name: z.string(),
+      age: z.number().int().positive(),
+    }),
+  });
+  const user = localdb.tables;
+  user.create({ name: "Jane", age: 23 });
 
-// user.create({ name: "Jane", age: 23.2 });
+  // console.log(user.getAll());
 
-// console.log(user.getAll());
+  // user.updateMany({
+  //   where: (data) => data.name === "Jane",
+  //   data: { age: 36 },
+  // });
+  localdb.write();
+}
 
-user.updateMany({
-  where: (data) => data.name === "Jane",
-  data: { age: 36 },
-});
-
-localdb.write();
+test();

@@ -1,77 +1,61 @@
-import { Writer } from "@redchili/steno";
-import fse from "fs-extra";
-import { Schema, validate } from "jtd";
+import { ZodObject } from "zod";
 import { nanoid } from "nanoid";
-import path from "path";
-import { isEmptyArray } from "./is-empty.js";
+import * as util from "./util/index.js";
+import { Adapter, ItemType } from "./type.js";
+export const helper = util;
 
-export { default as createSchema } from "./create-schema.js";
-
-interface Options {
-  schema: Record<string, Schema>;
-}
-
-interface ItemBaseType {
-  id: string;
-  createAt: number;
-  updateAt: number;
-}
+type Schema = ZodObject<any>;
 
 type FilterType<T> = (data: T) => boolean;
 
-class Localdb<T> {
-  private cacheData: (T & ItemBaseType)[];
-  private filepath: string;
-  private fileWriter: Writer;
+class Localdb<T extends Record<string, unknown>> {
+  // @ts-ignore
+  private data: (T & ItemType)[];
+  private fileTool: Adapter<T & ItemType>;
+  // @ts-ignore
   public tables: Curd<T>;
-  constructor(filepath: string, { schema }: Options) {
-    this.filepath = filepath;
-    if (fse.existsSync(filepath)) {
-      if (fse.readFileSync(filepath, "utf8")) {
-        this.cacheData = fse.readJsonSync(filepath);
-      } else {
-        this.cacheData = [];
-      }
-    } else {
-      this.cacheData = [];
-      fse.mkdirSync(path.dirname(filepath));
-      fse.writeFileSync(filepath, "{}");
+  constructor(adapter: Adapter<T & ItemType>) {
+    this.fileTool = adapter;
+  }
+  async schema({ schema }: { schema: Schema }) {
+    const data = await this.fileTool.read();
+    try {
+      this.tables = new Curd(data, schema);
+    } catch (error) {
+      console.error(error);
     }
-    this.fileWriter = new Writer(this.filepath);
-    this.tables = new Curd(this.cacheData, schema);
   }
   async write() {
-    this.cacheData = this.tables.getAll();
+    this.data = this.tables.getAll();
 
     try {
-      await this.fileWriter.write(JSON.stringify(this.cacheData, null, "\t"));
+      await this.fileTool.save(JSON.stringify(this.data, null, "\t"));
     } catch (error) {
       console.log(error);
     }
   }
 }
 
-class Curd<T extends Record<string, any>> {
-  private data: (T & ItemBaseType)[];
+class Curd<T extends Record<string, unknown>> {
+  private data: (T & ItemType)[];
   private schema: Schema;
-  constructor(data: (T & ItemBaseType)[], schema: Schema) {
+  constructor(data: (T & ItemType)[], schema: Schema) {
     this.data = data;
     this.schema = schema;
   }
   create(item: T) {
-    const jtdRes = validate(this.schema, item);
-    if (!isEmptyArray(jtdRes)) {
-      throw new Error(
-        `${JSON.stringify(item)} is invalid, ${JSON.stringify(jtdRes)}`
-      );
+    const valid = this.schema.safeParse(item);
+    if (valid.success) {
+      const fullItem = {
+        id: nanoid(),
+        createAt: Date.now(),
+        updateAt: Date.now(),
+        ...item,
+      };
+      this.data.push(fullItem);
+    } else {
+      throw valid.error;
     }
-    const fullItem = {
-      id: nanoid(),
-      createAt: Date.now(),
-      updateAt: Date.now(),
-      ...item,
-    };
-    this.data.push(fullItem);
   }
 
   getAll() {

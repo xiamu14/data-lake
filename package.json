@@ -1,6 +1,6 @@
 {
   "name": "@redchili/localdb",
-  "version": "0.0.1-alpha.10",
+  "version": "1.0.0",
   "main": "build/mod.js",
   "license": "MIT",
   "type": "module",
@@ -10,17 +10,17 @@
   ],
   "scripts": {
     "build": "tsc",
-    "test": "node --loader tsm example/index.ts",
-    "codegen": "./tools/jtd-codegen ./tools/schema.json --typescript-out ./example/schema"
+    "test": "node --loader tsm ./example/index.ts"
   },
   "dependencies": {
     "@redchili/steno": "^2.0.1",
     "fs-extra": "^10.0.0",
-    "jtd": "^0.1.1",
-    "nanoid": "^3.1.25"
+    "nanoid": "^3.1.25",
+    "zod": "^3.21.4"
   },
   "peerDependencies": {
-    "typescript": "^4.4.2"
+    "typescript": "^4.9.5",
+    "zod": "^3.21.4"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.12",
@@ -29,7 +29,11 @@
     "@typescript-eslint/parser": "^5.22.0",
     "eslint": "^8.15.0",
     "renew-it": "^1.5.2",
-    "tsm": "^2.2.1",
-    "typescript": "^4.4.2"
+    "ts-node": "^10.9.1",
+    "tsm": "^2.3.0",
+    "typescript": "^4.9.5"
+  },
+  "volta": {
+    "node": "18.15.0"
   }
 }
