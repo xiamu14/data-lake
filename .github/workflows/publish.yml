@@ -24,7 +24,7 @@ jobs:
       # - run: yarn build
       # - run: yarn publish --access public
       - name: Install dependencies and build 🔧
-        run: npm ci && npm run build
+        run: npm install && npm run build
       - name: Publish package on NPM 📦
         run: npm publish
         env:
