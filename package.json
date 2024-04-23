@@ -1,16 +1,13 @@
 {
-  "name": "@redchili/localdb",
-  "version": "1.0.6",
+  "name": "data-lake",
+  "version": "0.0.6",
   "main": "build/mod.js",
   "license": "MIT",
   "type": "module",
   "private": false,
-  "files": [
-    "build"
-  ],
+  "files": ["build"],
   "scripts": {
-    "build": "tsc",
-    "test": "node --loader tsm ./example/index.ts"
+    "build": "tsc"
   },
   "dependencies": {
     "@redchili/steno": "^2.0.1",

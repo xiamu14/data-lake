@@ -8,25 +8,25 @@ type Schema = ZodObject<any>;
 
 type FilterType<T> = (data: T) => boolean;
 
-class Localdb<T extends Record<string, unknown>> {
+class DataLake<T extends Record<string, unknown>> {
   // @ts-ignore
   private data: (T & ItemType)[];
   private fileTool: Adapter<T & ItemType>;
   // @ts-ignore
-  public tables: Curd<T>;
+  public table: Curd<T>;
   constructor(adapter: Adapter<T & ItemType>) {
     this.fileTool = adapter;
   }
   async schema({ schema }: { schema: Schema }) {
     const data = await this.fileTool.read();
     try {
-      this.tables = new Curd(data, schema);
+      this.table = new Curd(data, schema);
     } catch (error) {
       console.error(error);
     }
   }
-  async write() {
-    this.data = this.tables.getAll();
+  async save() {
+    this.data = this.table.getAll();
 
     try {
       await this.fileTool.save(JSON.stringify(this.data, null, "\t"));
@@ -130,4 +130,4 @@ class Curd<T extends Record<string, unknown>> {
   }
 }
 
-export default Localdb;
+export default DataLake;

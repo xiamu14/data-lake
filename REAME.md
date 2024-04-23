@@ -1,3 +1,4 @@
+```ts
 import path from "path";
 import DataLake from "../src/mod.js";
 import z from "zod";
@@ -20,15 +21,14 @@ async function main() {
   const user = dataLake.table;
   user.create({ name: "Jane", age: 23 });
 
-  // console.log(user.findById("Atw2ExFczYHIacTOxLxmz"));
+  console.log(user.getAll());
 
-  console.log(user.findMany({ where: (data) => data.name === "Jane" }));
-
-  // user.updateMany({
-  //   where: (data) => data.name === "Jane",
-  //   data: { age: 36 },
-  // });
+  user.updateMany({
+    where: (data) => data.name === "Jane",
+    data: { age: 36 },
+  });
   dataLake.save();
 }
 
 main();
+```
