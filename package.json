@@ -1,6 +1,6 @@
 {
-  "name": "data-lake",
-  "version": "1.0.0",
+  "name": "data-lake-file",
+  "version": "1.0.1",
   "main": "build/mod.js",
   "license": "MIT",
   "type": "module",
