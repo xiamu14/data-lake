@@ -8,40 +8,14 @@ type Schema = ZodObject<any>;
 
 type FilterType<T> = (data: T) => boolean;
 
-class DataLake<T extends Record<string, unknown>> {
-  // @ts-ignore
-  private data: (T & ItemType)[];
-  private fileTool: Adapter<T & ItemType>;
-  // @ts-ignore
-  public table: Curd<T>;
-  constructor(adapter: Adapter<T & ItemType>) {
-    this.fileTool = adapter;
-  }
-  async schema({ schema }: { schema: Schema }) {
-    const data = await this.fileTool.read();
-    try {
-      this.table = new Curd(data, schema);
-    } catch (error) {
-      console.error(error);
-    }
-  }
-  async save() {
-    this.data = this.table.getAll();
-
-    try {
-      await this.fileTool.save(JSON.stringify(this.data, null, "\t"));
-    } catch (error) {
-      console.log(error);
-    }
-  }
-}
-
 class Curd<T extends Record<string, unknown>> {
-  private data: (T & ItemType)[];
+  public data: (T & ItemType)[] = [];
   private schema: Schema;
-  constructor(data: (T & ItemType)[], schema: Schema) {
-    this.data = data;
+  constructor(schema: Schema) {
     this.schema = schema;
+  }
+  mount(data: (T & ItemType)[]) {
+    this.data = data;
   }
   create(item: T) {
     const valid = this.schema.safeParse(item);
@@ -127,6 +101,29 @@ class Curd<T extends Record<string, unknown>> {
 
   deleteAll() {
     this.data = [];
+  }
+}
+
+class DataLake<T extends Record<string, unknown>> extends Curd<T> {
+  private adapter: Adapter<T & ItemType>;
+  constructor(options: { schema: Schema; adapter: Adapter<T & ItemType> }) {
+    super(options.schema);
+    this.adapter = options.adapter;
+  }
+  async load() {
+    try {
+      const data = await this.adapter.read();
+      this.mount(data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+  async save() {
+    try {
+      await this.adapter.save(JSON.stringify(this.data, null, "\t"));
+    } catch (error) {
+      console.log(error);
+    }
   }
 }
 
