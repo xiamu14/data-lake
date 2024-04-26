@@ -16,10 +16,10 @@ const userTable = new DataLake<z.infer<typeof User>>({
 
 async function main() {
   await userTable.load();
-  userTable.create({ name: "Jane", age: 23 });
+  const people = userTable.create({ name: "Jane", age: 23 });
 
   // console.log(userTable.findById("Atw2ExFczYHIacTOxLxmz"));
-
+  console.log(people);
   console.log(userTable.findMany({ where: (data) => data.name === "Jane" }));
 
   // userTable.updateMany({

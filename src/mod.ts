@@ -27,6 +27,7 @@ class Curd<T extends Record<string, unknown>> {
         ...item,
       };
       this.data.push(fullItem);
+      return fullItem;
     } else {
       throw valid.error;
     }
@@ -37,8 +38,8 @@ class Curd<T extends Record<string, unknown>> {
   }
 
   createMany(items: T[]) {
-    items.forEach((item) => {
-      this.create(item);
+    return items.map((item) => {
+      return this.create(item);
     });
   }
 
@@ -59,18 +60,21 @@ class Curd<T extends Record<string, unknown>> {
     if (target) {
       const index = this.data.indexOf(target);
       const source = this.data[index];
-      this.data[index] = {
+      const newItem = {
         ...source,
         ...data,
         updateAt: Date.now(),
       };
+      this.data[index] = newItem;
+      return newItem;
     }
+    return undefined;
   }
 
   updateMany(condition: { where: FilterType<T>; data: Partial<T> }) {
     const { where, data } = condition;
     const target = this.findMany({ where });
-    target.forEach((item) => {
+    return target.map((item) => {
       const index = this.data.indexOf(item);
       let source = this.data[index];
       source = {
@@ -80,6 +84,7 @@ class Curd<T extends Record<string, unknown>> {
       };
 
       this.data[index] = source;
+      return source;
     });
   }
 
