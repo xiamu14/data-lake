@@ -15,10 +15,6 @@
     "nanoid": "^3.1.25",
     "zod": "^3.21.4"
   },
-  "peerDependencies": {
-    "typescript": "^4.9.5",
-    "zod": "^3.21.4"
-  },
   "devDependencies": {
     "@types/fs-extra": "^9.0.12",
     "@types/node": "^17.0.31",
